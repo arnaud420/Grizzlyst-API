@@ -30,5 +30,11 @@ ListProduct.belongsTo(List);
 ListProduct.belongsTo(Department);
 
 module.exports = {
-    sequelize
+    sequelize,
+    User,
+    Group,
+    List,
+    Product,
+    Department,
+    ListProduct
 };

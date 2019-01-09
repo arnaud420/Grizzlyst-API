@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/remi95/Grizzlyst-API#readme",
   "dependencies": {
+    "bcrypt": "^3.0.0",
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "mysql2": "^1.6.4",
