@@ -11,13 +11,13 @@ const generateToken = (id) => {
 
 router.post('/login', async (req, res) => {
     if (req.method !== 'POST') {
-        return res.status(401).send('Method not allowed');
+        return res.status(401).send({message: 'Method not allowed'});
     }
 
     const { email, password } = req.body;
 
     if (!email || !password) {
-        return res.status(400).send('Email and password required');
+        return res.status(400).send({message: 'Email and password required'});
     }
 
     try {
@@ -26,13 +26,13 @@ router.post('/login', async (req, res) => {
         });
 
         if (user === null) {
-            return res.status(401).send('Bad credentials')
+            return res.status(401).send({message: 'Bad credentials'})
         }
 
         const hashPassword = await bcrypt.compare(password, user.password);
 
         if (!hashPassword) {
-            return res.status(401).send('Bad credentials');
+            return res.status(401).send({message: 'Bad credentials'});
         }
 
         const token = generateToken(user.id);
@@ -40,22 +40,22 @@ router.post('/login', async (req, res) => {
         res.send({
             user,
             token
-        })
+        });
 
     }
     catch (e) {
-        console.log(e)
+        res.json({message: e.message});
     }
 
 });
 
 router.post('/signup', async (req, res) => {
     if (req.method !== 'POST') {
-        return res.status(401).send('Method not allowed');
+        return res.status(401).send({message: 'Method not allowed'});
     }
 
     if (req.body.password !== req.body.confirmPassword) {
-        res.status(401).send('Password doesn\'t match');
+        res.status(401).send({message: 'Password doesn\'t match'});
     }
 
     try {
@@ -67,7 +67,7 @@ router.post('/signup', async (req, res) => {
         });
     }
     catch (e) {
-        res.send(e.message);
+        res.json({message: e.message});
     }
 });
 

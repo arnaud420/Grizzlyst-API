@@ -16,11 +16,28 @@ router.get('/:id', async (req, res) => {
     try {
         const group = await Group.findById(req.params.id);
 
-        // if (group === undefined) {
-        //     return res.json('Aucun groupe trouvé');
-        // }
+        if (group === null) {
+            return res.json({message: 'No group found'});
+        }
 
         res.json(group);
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+router.get('/:id/users', async (req, res) => {
+    try {
+        const group = await Group.findById(req.params.id);
+
+        if (group === null) {
+            return res.json({message: 'No group found'});
+        }
+
+        const users = await group.getUsers();
+
+        res.json({group, users});
     }
     catch (e) {
         res.json({message: e.message});
@@ -98,12 +115,52 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', async (req, res) => {
     try {
-        await Group.destroy({
+        const group = await Group.destroy({
             where: { id: req.params.id }
         });
+
+        if (group === 0) {
+            return res.json({message: 'Group not found'});
+        }
         res.sendStatus(202);
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+router.delete('/:id/user/:userId/delete', async (req, res) => {
+    try {
+        const group = await Group.findById(req.params.id);
+
+        if (group === null) {
+            return res.json({message: 'Group not found'});
+        }
+
+        const admin = await User.findById(group.adminId);
+
+        if (admin === null) {
+            return res.json({message: 'User not found'});
+        }
+
+        if (req.body.adminId !== admin.id) {
+            return res.json({message: `User ${req.body.adminId} not allowed to delete`});
+        }
+
+        if (req.body.adminId === admin.id) {
+            return res.json({message: 'Admin can\'t remove himself from the group'});
+        }
+
+        group.removeUser(req.params.userId);
+
+        const usersGroup = await group.getUsers();
+
+        res.json({
+            group,
+            usersGroup
+        });
     }
     catch (e) {
         res.json({message: e.message});
