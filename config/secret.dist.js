@@ -1,3 +1,7 @@
 module.exports = {
-    jwtSecret: 'randomString'
+    jwtSecret: 'randomString',
+    mail: {
+        user: 'user@gmail.com',
+        pass: 'password'
+    }
 };

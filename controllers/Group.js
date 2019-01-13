@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Group, User } = require('../models');
+const GLMail = require('../helpers/GLMail');
 
 router.get('/', async (req, res) => {
     try {
@@ -90,7 +91,14 @@ router.post('/:id/user/add', async (req, res) => {
         });
 
         if (user === null) {
-            return res.json({message: 'User not found'});
+            const msg = 'Test texte <a href="https://www.google.com">test link</a>';
+            try {
+                await GLMail.sendMail(req.body.email, `Demande d'inscription au groupe ${group.name}`, msg);
+                res.json({message: 'Mail send with success'});
+            }
+            catch (e) {
+                res.json({error: e.message})
+            }
         }
 
         group.addUser(user);
