@@ -13,14 +13,15 @@ const List = sequelize.import(__dirname + '/List');
 const Product = sequelize.import(__dirname + '/Product');
 const Department = sequelize.import(__dirname + '/Department');
 const ListProduct = sequelize.import(__dirname + '/ListProduct');
+const UserGroups = sequelize.import(__dirname + '/UserGroup');
 
 // UserGroup
-User.belongsToMany(Group, { through: 'user_group' });
-Group.belongsToMany(User, { through: 'user_group' });
+User.belongsToMany(Group, { through: UserGroups });
+Group.belongsToMany(User, { through: UserGroups });
 
 // Favorites (groupDepartment)
-Department.belongsToMany(Group, { through: 'favorite' });
-Group.belongsToMany(Department, { through: 'favorite' });
+// Department.belongsToMany(Group, { through: 'favorite' });
+// Group.belongsToMany(Department, { through: 'favorite' });
 
 List.belongsTo(Group);
 Department.belongsTo(Group);
