@@ -37,5 +37,6 @@ module.exports = {
     List,
     Product,
     Department,
-    ListProduct
+    ListProduct,
+    UserGroups
 };

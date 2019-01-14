@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Group, User } = require('../models');
+const { Group, User, UserGroups } = require('../models');
 const GLMail = require('../helpers/GLMail');
 
 router.get('/', async (req, res) => {
@@ -36,7 +36,9 @@ router.get('/:id/users', async (req, res) => {
             return res.json({message: 'No group found'});
         }
 
-        const users = await group.getUsers();
+        const users = await UserGroups.findAll({
+            where: { status: 1, groupId: group.id }
+        });
 
         res.json({group, users});
     }
@@ -158,7 +160,9 @@ router.delete('/:id/user/:userId/delete', async (req, res) => {
         }
 
         if (req.body.adminId === admin.id) {
-            return res.json({message: 'Admin can\'t remove himself from the group'});
+            await group.destroy();
+            // return res.json({message: 'Admin can\'t remove himself from the group'});
+            return res.json({message: 'Group destroy with success'});
         }
 
         group.removeUser(req.params.userId);
