@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Group, User, UserGroups } = require('../models');
+const { Group, User, Invitation } = require('../models');
 const GLMail = require('../helpers/GLMail');
 
 router.get('/', async (req, res) => {
@@ -36,9 +36,7 @@ router.get('/:id/users', async (req, res) => {
             return res.json({message: 'No group found'});
         }
 
-        const users = await UserGroups.findAll({
-            where: { status: 1, groupId: group.id }
-        });
+        const users = await group.getUsers();
 
         res.json({group, users});
     }
@@ -72,39 +70,59 @@ router.post('/', async (req, res) => {
 
 router.post('/:id/user/add', async (req, res) => {
     try {
-        const group = await Group.findById(req.params.id);
+        const { email } = req.body;
+
+        const group = await Group.findByPk(req.params.id);
 
         if (group === null) {
             return res.json({message: 'Group not found'});
         }
 
-        const admin = await User.findById(group.adminId);
-
-        if (admin === null) {
-            return res.json({message: 'User not found'});
-        }
-
-        if (!req.body.email) {
+        if (!email) {
             return res.json({message: 'Email required'});
         }
 
+        const admin = await User.findByPk(group.adminId);
+
+        if (admin === null) {
+            return res.json({message: 'Admin not found'});
+        }
+
+        if (admin.email === email) {
+            return res.json({message: 'Admin already in group'})
+        }
+
         const user = await User.findOne({
-            where: { email: req.body.email }
+            where: { email }
         });
 
         if (user === null) {
-            const msg = 'Test texte <a href="https://www.google.com">test link</a>';
-            try {
-                await GLMail.sendMail(req.body.email, `Demande d'inscription au groupe ${group.name}`, msg);
-                res.json({message: 'Mail send with success'});
+            const userInvitation = await Invitation.findAll({
+                where: {
+                    email,
+                    groupId: group.id
+                }
+            });
+
+            if (userInvitation.length >= 1) {
+                return res.json({errorMessage: 'User already invited to join this group'})
             }
-            catch (e) {
+
+            const msg = 'Invitation à télécharger l\'application GrizzLyst';
+            try {
+                await GLMail.sendMail(email, `Demande d'inscription au groupe ${group.name}`, msg);
+            } catch (e) {
                 res.json({error: e.message})
             }
+
+            await Invitation.create({
+                email,
+                groupId: group.id
+            });
+            return res.json({message: 'Mail send with success'});
         }
 
-        group.addUser(user);
-
+        await group.addUser(user);
         res.json(await group.getUsers());
 
     }
@@ -115,10 +133,15 @@ router.post('/:id/user/add', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
     try {
-        const group = await Group.update(req.body, {
+        if (req.body.adminId) {
+            return res.json({message: 'Admin can not be modified'})
+        }
+
+        await Group.update(req.body, {
             where: { id: req.params.id }
         });
-        res.json(group);
+
+        res.json({message: 'Group update with success'});
     }
     catch (e) {
         res.json({message: e.message});
@@ -127,21 +150,30 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
     try {
-        const group = await Group.destroy({
+        const group = await Group.findOne({
             where: { id: req.params.id }
         });
 
-        if (group === 0) {
+        if (group === null) {
             return res.json({message: 'Group not found'});
         }
-        res.sendStatus(202);
+
+        const admin = await User.findByPk(group.adminId);
+
+        if (req.body.adminId !== admin.id) {
+            return res.json({message: 'You are not allowed to delete'});
+        }
+        else {
+            await group.destroy();
+            return res.json({message: 'Group destroy with success'});
+        }
     }
     catch (e) {
         res.json({message: e.message});
     }
 });
 
-router.delete('/:id/user/:userId/delete', async (req, res) => {
+router.delete('/:id/user/:userId', async (req, res) => {
     try {
         const group = await Group.findById(req.params.id);
 
@@ -149,23 +181,7 @@ router.delete('/:id/user/:userId/delete', async (req, res) => {
             return res.json({message: 'Group not found'});
         }
 
-        const admin = await User.findById(group.adminId);
-
-        if (admin === null) {
-            return res.json({message: 'User not found'});
-        }
-
-        if (req.body.adminId !== admin.id) {
-            return res.json({message: `User ${req.body.adminId} not allowed to delete`});
-        }
-
-        if (req.body.adminId === admin.id) {
-            await group.destroy();
-            // return res.json({message: 'Admin can\'t remove himself from the group'});
-            return res.json({message: 'Group destroy with success'});
-        }
-
-        group.removeUser(req.params.userId);
+        await group.removeUser(req.params.userId);
 
         const usersGroup = await group.getUsers();
 

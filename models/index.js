@@ -14,14 +14,13 @@ const Product = sequelize.import(__dirname + '/Product');
 const Department = sequelize.import(__dirname + '/Department');
 const ListProduct = sequelize.import(__dirname + '/ListProduct');
 const UserGroups = sequelize.import(__dirname + '/UserGroup');
+const Invitation = sequelize.import(__dirname + '/Invitation');
 
 // UserGroup
 User.belongsToMany(Group, { through: UserGroups });
 Group.belongsToMany(User, { through: UserGroups });
 
-// Favorites (groupDepartment)
-// Department.belongsToMany(Group, { through: 'favorite' });
-// Group.belongsToMany(Department, { through: 'favorite' });
+Invitation.belongsTo(Group);
 
 List.belongsTo(Group);
 Department.belongsTo(Group);
@@ -38,5 +37,6 @@ module.exports = {
     Product,
     Department,
     ListProduct,
-    UserGroups
+    UserGroups,
+    Invitation
 };
