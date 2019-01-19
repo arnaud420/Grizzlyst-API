@@ -9,7 +9,10 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         state: {
-            type: DataTypes.STRING,
+            // 0: En attente
+            // 1: En cours
+            // 2: Terminé
+            type: DataTypes.TINYINT,
             allowNull: false,
         }
     });

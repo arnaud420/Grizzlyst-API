@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Group, User, Invitation } = require('../models');
+const { Group, User, Invitation, List } = require('../models');
 const GLMail = require('../helpers/GLMail');
 
 router.get('/', async (req, res) => {
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
-        const group = await Group.findById(req.params.id);
+        const group = await Group.findByPk(req.params.id);
 
         if (group === null) {
             return res.json({message: 'No group found'});
@@ -30,7 +30,7 @@ router.get('/:id', async (req, res) => {
 
 router.get('/:id/users', async (req, res) => {
     try {
-        const group = await Group.findById(req.params.id);
+        const group = await Group.findByPk(req.params.id);
 
         if (group === null) {
             return res.json({message: 'No group found'});
@@ -45,13 +45,32 @@ router.get('/:id/users', async (req, res) => {
     }
 });
 
+router.get('/:id/lists', async (req, res) => {
+    try {
+        const group = await Group.findByPk(req.params.id);
+
+        if (group === null) {
+            return res.json({message: 'No group found'});
+        }
+
+        const lists = await List.findAll({
+            where: { groupId: group.id }
+        });
+
+        res.json({group, lists});
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
 router.post('/', async (req, res) => {
     try {
         if (!req.body.name || !req.body.adminId) {
             return res.json({message: 'Name and adminId required'})
         }
 
-        const admin = await User.findById(req.body.adminId);
+        const admin = await User.findByPk(req.body.adminId);
 
         if (admin === null) {
             return res.json({message: 'User not found'});
@@ -175,7 +194,7 @@ router.delete('/:id', async (req, res) => {
 
 router.delete('/:id/user/:userId', async (req, res) => {
     try {
-        const group = await Group.findById(req.params.id);
+        const group = await Group.findByPk(req.params.id);
 
         if (group === null) {
             return res.json({message: 'Group not found'});

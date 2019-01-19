@@ -3,7 +3,21 @@ const router = express.Router();
 const { Invitation, User, Group } = require('../models');
 
 router.get('/', async (req, res) => {
-    res.send('Hello user!')
+    try {
+        res.json(await User.findAll());
+    }
+    catch (e) {
+        res.json({message: e.error});
+    }
+});
+
+router.get('/:id', async (req, res) => {
+    try {
+        res.json(await User.findByPk(req.params.id));
+    }
+    catch (e) {
+        res.json({message: e.error});
+    }
 });
 
 router.get('/:id/invitations', async (req, res) => {
@@ -18,5 +32,7 @@ router.get('/:id/invitations', async (req, res) => {
         res.json({message: e.error});
     }
 });
+
+
 
 module.exports = router;
