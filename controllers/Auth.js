@@ -2,12 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 const { User } = require('../models');
-const jwt = require('jsonwebtoken');
-const { jwtSecret } = require('../config/secret');
-
-const generateToken = (id) => {
-    return jwt.sign({ id }, jwtSecret, { expiresIn: 86400 });
-};
+const { generateToken } = require('../helpers/jwt');
 
 router.post('/login', async (req, res) => {
     if (req.method !== 'POST') {
@@ -56,6 +51,10 @@ router.post('/signup', async (req, res) => {
 
     if (req.body.password !== req.body.confirmPassword) {
         res.status(401).send({message: 'Password doesn\'t match'});
+    }
+
+    if (!req.body.firstname || !req.body.name || !req.body.pseudo) {
+        res.status(401).send({message: 'Firstname, name and pseudo required'});
     }
 
     try {

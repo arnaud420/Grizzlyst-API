@@ -3,7 +3,7 @@ const { jwtSecret } = require('../config/secret');
 const { User } = require('../models');
 
 const jwtMiddleware = (req, res, next) => {
-    if (req.url === '/auth/login' || req.url === '/auth/signup') {
+    if (req.url === '/api/auth/login' || req.url === '/api/auth/signup') {
         return next();
     }
 
