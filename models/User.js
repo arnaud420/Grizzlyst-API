@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 
 module.exports = (sequelize, DataTypes) => {
-    return sequelize.define('user', {
+    const User = sequelize.define('user', {
         name: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -36,4 +36,10 @@ module.exports = (sequelize, DataTypes) => {
             }
         }
     });
+
+    User.associate = (models) => {
+        models.user.belongsToMany(models.group, { through: 'user_groups' })
+    };
+
+    return User;
 };

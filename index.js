@@ -1,10 +1,10 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const { sequelize } = require('./models');
+const db = require('./models');
 const jwt = require('./middlewares/jwt');
 
-sequelize.sync();
+db.sequelize.sync();
 
 // Middlewares
 app.use(bodyParser.json());

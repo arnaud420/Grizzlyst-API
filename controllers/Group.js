@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { Group, User, Invitation, List } = require('../models');
+const models = require('../models');
 const GLMail = require('../helpers/GLMail');
 
 router.get('/', async (req, res) => {
     try {
-        const groups = await Group.findAll();
+        const groups = await models.group.findAll();
         res.json(groups);
     }
     catch (e) {
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
-        const group = await Group.findByPk(req.params.id);
+        const group = await models.group.findByPk(req.params.id);
 
         if (group === null) {
             return res.json({message: 'No group found'});
@@ -30,13 +30,13 @@ router.get('/:id', async (req, res) => {
 
 router.get('/:id/users', async (req, res) => {
     try {
-        const group = await Group.findByPk(req.params.id);
+        const group = await models.group.findByPk(req.params.id);
 
         if (group === null) {
             return res.json({message: 'No group found'});
         }
 
-        const users = await group.getUsers();
+        const users = await models.group.getUsers();
 
         res.json({group, users});
     }
@@ -70,15 +70,15 @@ router.post('/', async (req, res) => {
             return res.json({message: 'Name and adminId required'})
         }
 
-        const admin = await User.findByPk(req.body.adminId);
+        const admin = await models.user.findByPk(req.body.adminId);
 
         if (admin === null) {
             return res.json({message: 'User not found'});
         }
 
-        const group = await Group.create(req.body);
+        const group = await models.group.create(req.body);
 
-        group.addUser(admin);
+        await group.addUser(admin);
 
         res.json(group);
     }
@@ -91,7 +91,7 @@ router.post('/:id/user/add', async (req, res) => {
     try {
         const { email } = req.body;
 
-        const group = await Group.findByPk(req.params.id);
+        const group = await models.group.findByPk(req.params.id);
 
         if (group === null) {
             return res.json({message: 'Group not found'});
@@ -101,7 +101,7 @@ router.post('/:id/user/add', async (req, res) => {
             return res.json({message: 'Email required'});
         }
 
-        const admin = await User.findByPk(group.adminId);
+        const admin = await models.user.findByPk(group.adminId);
 
         if (admin === null) {
             return res.json({message: 'Admin not found'});
@@ -111,12 +111,12 @@ router.post('/:id/user/add', async (req, res) => {
             return res.json({message: 'Admin already in group'})
         }
 
-        const user = await User.findOne({
+        const user = await models.user.findOne({
             where: { email }
         });
 
         if (user === null) {
-            const userInvitation = await Invitation.findAll({
+            const userInvitation = await models.invitation.findAll({
                 where: {
                     email,
                     groupId: group.id
@@ -134,7 +134,7 @@ router.post('/:id/user/add', async (req, res) => {
                 res.json({error: e.message})
             }
 
-            await Invitation.create({
+            await models.invitation.create({
                 email,
                 groupId: group.id
             });
@@ -156,7 +156,7 @@ router.put('/:id', async (req, res) => {
             return res.json({message: 'Admin can not be modified'})
         }
 
-        await Group.update(req.body, {
+        await models.group.update(req.body, {
             where: { id: req.params.id }
         });
 
@@ -169,7 +169,7 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
     try {
-        const group = await Group.findOne({
+        const group = await models.group.findOne({
             where: { id: req.params.id }
         });
 
@@ -177,7 +177,7 @@ router.delete('/:id', async (req, res) => {
             return res.json({message: 'Group not found'});
         }
 
-        const admin = await User.findByPk(group.adminId);
+        const admin = await models.user.findByPk(group.adminId);
 
         if (req.body.adminId !== admin.id) {
             return res.json({message: 'You are not allowed to delete'});
@@ -194,10 +194,14 @@ router.delete('/:id', async (req, res) => {
 
 router.delete('/:id/user/:userId', async (req, res) => {
     try {
-        const group = await Group.findByPk(req.params.id);
+        const group = await models.group.findByPk(req.params.id);
 
         if (group === null) {
             return res.json({message: 'Group not found'});
+        }
+
+        if (req.current_user === group.adminId) {
+            return res.json({message: 'Admin can\t remove himself from group'});
         }
 
         await group.removeUser(req.params.userId);

@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-    return sequelize.define('invitation', {
+    const Invitation = sequelize.define('invitation', {
         email: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -8,4 +8,10 @@ module.exports = (sequelize, DataTypes) => {
             }
         }
     });
+
+    Invitation.associate = (models) => {
+        models.invitation.belongsTo(models.group);
+    };
+
+    return Invitation;
 };

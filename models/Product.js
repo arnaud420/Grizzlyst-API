@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-    return sequelize.define('product', {
+    const Product = sequelize.define('product', {
         _id: {
             type: DataTypes.BIGINT,
             allowNull: false,
@@ -52,4 +52,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING
         },
     });
+
+    Product.associate = (models) => {
+        models.product.belongsToMany(models.list, { through: 'list_products' });
+    };
+
+    return Product;
 };

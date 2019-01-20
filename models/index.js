@@ -1,42 +1,52 @@
-const Sequelize = require('sequelize');
-const { DB_NAME, DB_PASSWORD, DB_USERNAME } = require('../config/db');
+// const Sequelize = require('sequelize');
+// const { DB_NAME, DB_PASSWORD, DB_USERNAME, config } = require('../config/db');
+//
+// const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, config);
+//
+// const User = sequelize.import(__dirname + '/User');
+// const Group = sequelize.import(__dirname + '/Group');
+// const UserGroups = sequelize.import(__dirname + '/UserGroups');
+// const List = sequelize.import(__dirname + '/List');
+// const Product = sequelize.import(__dirname + '/Product');
+// const ListProducts = sequelize.import(__dirname + '/ListProducts');
+// const Invitation = sequelize.import(__dirname + '/Invitation');
+//
+// module.exports = {
+//     sequelize,
+//     User,
+//     Group,
+//     UserGroups,
+//     List,
+//     Product,
+//     ListProducts,
+//     Invitation
+// };
 
-const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
-    host: 'localhost',
-    dialect: 'mysql',
-    operatorsAliases: false
+const fs        = require('fs');
+const path      = require('path');
+const Sequelize = require('sequelize');
+const basename  = path.basename(__filename);
+const db        = {};
+const { DB_NAME, DB_PASSWORD, DB_USERNAME, config } = require('../config/db');
+
+const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, config);
+fs
+    .readdirSync(__dirname)
+    .filter(file => {
+        return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js');
+    })
+    .forEach(file => {
+        var model = sequelize['import'](path.join(__dirname, file));
+        db[model.name] = model;
+    });
+
+Object.keys(db).forEach(modelName => {
+    if (db[modelName].associate) {
+        db[modelName].associate(db);
+    }
 });
 
-const User = sequelize.import(__dirname + '/User');
-const Group = sequelize.import(__dirname + '/Group');
-const List = sequelize.import(__dirname + '/List');
-const Product = sequelize.import(__dirname + '/Product');
-const Department = sequelize.import(__dirname + '/Department');
-const ListProduct = sequelize.import(__dirname + '/ListProduct');
-const UserGroups = sequelize.import(__dirname + '/UserGroup');
-const Invitation = sequelize.import(__dirname + '/Invitation');
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
 
-// UserGroup
-User.belongsToMany(Group, { through: UserGroups });
-Group.belongsToMany(User, { through: UserGroups });
-
-Invitation.belongsTo(Group);
-
-List.belongsTo(Group);
-Department.belongsTo(Group);
-
-ListProduct.belongsTo(Product);
-ListProduct.belongsTo(List);
-ListProduct.belongsTo(Department);
-
-module.exports = {
-    sequelize,
-    User,
-    Group,
-    List,
-    Product,
-    Department,
-    ListProduct,
-    UserGroups,
-    Invitation
-};
+module.exports = db;

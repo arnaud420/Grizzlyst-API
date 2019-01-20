@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { User, List, Group } = require('../models');
+const models = require('../models');
 
 router.get('/', async (req, res) => {
     try {
-        res.json(await List.findAll());
+        res.json(await models.list.findAll());
     }
     catch (e) {
         res.json({message: e.error});
@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
-        res.json(await List.findByPk(req.params.id));
+        res.json(await models.list.findByPk(req.params.id));
     }
     catch (e) {
         res.json({message: e.error});
@@ -26,7 +26,7 @@ router.post('/', async (req, res) => {
             return res.json({message: 'Fields name, date and groupId required'})
         }
         req.body.state = 0;
-        const list = await List.create(req.body);
+        const list = await models.list.create(req.body);
         res.json(list);
     }
     catch (e) {

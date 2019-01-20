@@ -1,3 +1,3 @@
 module.exports = (sequelize, DataTypes) => {
-    return sequelize.define('list_product');
+    return sequelize.define('list_products');
 };

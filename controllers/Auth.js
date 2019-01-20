@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
-const { User } = require('../models');
+const models = require('../models');
 const { generateToken } = require('../helpers/jwt');
 
 router.post('/login', async (req, res) => {
@@ -16,7 +16,7 @@ router.post('/login', async (req, res) => {
     }
 
     try {
-        const user = await User.findOne({
+        const user = await models.user.findOne({
             where: { email }
         });
 
@@ -58,7 +58,7 @@ router.post('/signup', async (req, res) => {
     }
 
     try {
-        const user = await User.create(req.body);
+        const user = await models.user.create(req.body);
         const token = generateToken(user.id);
         res.send({
             user,

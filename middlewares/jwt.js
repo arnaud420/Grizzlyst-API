@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../config/secret');
-const { User } = require('../models');
+const models = require('../models');
 
 const jwtMiddleware = (req, res, next) => {
     if (req.url === '/api/auth/login' || req.url === '/api/auth/signup') {
@@ -24,7 +24,7 @@ const jwtMiddleware = (req, res, next) => {
             return res.status(500).send({message: 'Failed to authenticate token'});
         }
 
-        req.current_user = await User.findOne({
+        req.current_user = await models.user.findOne({
             where: { id: decoded.id }
         });
 

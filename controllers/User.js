@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Invitation, User, Group } = require('../models');
+const models = require('../models');
 
 router.get('/', async (req, res) => {
     try {
-        res.json(await User.findAll());
+        res.json(await models.user.findAll());
     }
     catch (e) {
         res.json({message: e.error});
@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
-        res.json(await User.findByPk(req.params.id));
+        res.json(await models.user.findByPk(req.params.id));
     }
     catch (e) {
         res.json({message: e.error});
@@ -22,8 +22,8 @@ router.get('/:id', async (req, res) => {
 
 router.get('/:id/invitations', async (req, res) => {
     try {
-        const user = await User.findByPk(req.params.id);
-        const invitations = await Invitation.findAll({
+        const user = await models.user.findByPk(req.params.id);
+        const invitations = await models.invitation.findAll({
             where: { email: user.email }
         });
         return res.json(invitations);

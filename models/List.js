@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-    return sequelize.define('list', {
+    const List = sequelize.define('list', {
         name: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -16,4 +16,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         }
     });
+
+    List.associate = (models) => {
+        models.list.belongsTo(models.group);
+        models.list.belongsToMany(models.product, { through: 'list_products' });
+    };
+
+    return List;
 };
