@@ -1,37 +1,13 @@
-// const Sequelize = require('sequelize');
-// const { DB_NAME, DB_PASSWORD, DB_USERNAME, config } = require('../config/db');
-//
-// const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, config);
-//
-// const User = sequelize.import(__dirname + '/User');
-// const Group = sequelize.import(__dirname + '/Group');
-// const UserGroups = sequelize.import(__dirname + '/UserGroups');
-// const List = sequelize.import(__dirname + '/List');
-// const Product = sequelize.import(__dirname + '/Product');
-// const ListProducts = sequelize.import(__dirname + '/ListProducts');
-// const Invitation = sequelize.import(__dirname + '/Invitation');
-//
-// module.exports = {
-//     sequelize,
-//     User,
-//     Group,
-//     UserGroups,
-//     List,
-//     Product,
-//     ListProducts,
-//     Invitation
-// };
-
-const fs        = require('fs');
-const path      = require('path');
+const fs = require('fs');
+const path = require('path');
 const Sequelize = require('sequelize');
-const basename  = path.basename(__filename);
-const db        = {};
+const basename = path.basename(__filename);
+const db = {};
 const { DB_NAME, DB_PASSWORD, DB_USERNAME, config } = require('../config/db');
 
 const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, config);
-fs
-    .readdirSync(__dirname)
+
+fs.readdirSync(__dirname)
     .filter(file => {
         return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js');
     })
