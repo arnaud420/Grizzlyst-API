@@ -53,9 +53,5 @@ module.exports = (sequelize, DataTypes) => {
         },
     });
 
-    Product.associate = (models) => {
-        models.product.belongsToMany(models.list, { through: 'list_products' });
-    };
-
     return Product;
 };
