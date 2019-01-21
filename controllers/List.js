@@ -20,6 +20,19 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+router.get('/:id/products', async (req, res) => {
+    try {
+        const products = await models.list_product.findAll({
+            where: { listId: req.params.id },
+            include: ['product']
+        });
+        res.json(products);
+    }
+    catch (e) {
+        res.json({message: e.error});
+    }
+});
+
 router.post('/', async (req, res) => {
     try {
         if (!req.body.name || !req.body.date || !req.body.groupId) {

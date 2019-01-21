@@ -47,13 +47,13 @@ router.get('/:id/users', async (req, res) => {
 
 router.get('/:id/lists', async (req, res) => {
     try {
-        const group = await Group.findByPk(req.params.id);
+        const group = await models.group.findByPk(req.params.id);
 
         if (group === null) {
             return res.json({message: 'No group found'});
         }
 
-        const lists = await List.findAll({
+        const lists = await models.list.findAll({
             where: { groupId: group.id }
         });
 
