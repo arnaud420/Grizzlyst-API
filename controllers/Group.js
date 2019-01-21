@@ -141,8 +141,17 @@ router.post('/:id/user/add', async (req, res) => {
             return res.json({message: 'Mail send with success'});
         }
 
-        await group.addUser(user);
-        res.json(await group.getUsers());
+        await models.invitation.create({
+            email,
+            groupId: group.id
+        });
+
+        const groupUsers = await group.getUsers();
+
+        res.json({
+            message: 'Invitation send with success',
+            groupUsers
+        });
 
     }
     catch (e) {
