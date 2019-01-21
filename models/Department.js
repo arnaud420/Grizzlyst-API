@@ -10,7 +10,8 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     Department.associate = (models) => {
-        models.department.belongsToMany(models.group, { through: 'favorite' })
+        models.department.belongsToMany(models.group, { through: 'favorite' });
+        models.department.hasMany(models.list_product);
     };
 
     return Department;
