@@ -17,20 +17,26 @@ class GLMail {
         // code
     }
 
-    static async sendMail(to, subject, content) {
+    static sendMail(to, subject, content) {
         const transporter = this.createTransport();
-        try {
-            await transporter.sendMail({
-                from: 'no-reply@grizzLyst.com',
-                to,
-                subject,
-                html: content
-            });
-        }
-        catch (e) {
-            throw e;
+        return transporter.sendMail({
+            from: 'no-reply@grizzLyst.com',
+            to,
+            subject,
+            html: content
+        });
+    }
+
+    static sendMultipleInvitations(emails, group) {
+        let promises = [];
+        const subject = `Demande d'inscription au groupe ${group.name}`;
+        const content = 'Invitation à télécharger l\'application GrizzLyst';
+
+        for (let i = 0; i < emails.length; i++) {
+            promises.push(this.sendMail(emails[i], subject, content));
         }
 
+        return Promise.all(promises);
     }
 }
 

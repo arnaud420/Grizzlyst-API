@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const models = require('../models');
 const GLMail = require('../helpers/GLMail');
+const { createInvitationObj } = require('../helpers/group');
 
 router.get('/', async (req, res) => {
     try {
@@ -66,19 +67,17 @@ router.get('/:id/lists', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        if (!req.body.name || !req.body.adminId) {
-            return res.json({message: 'Name and adminId required'})
+        const { current_user } = req;
+
+        if (!req.body.name) {
+            return res.json({message: 'Name required'})
         }
 
-        const admin = await models.user.findByPk(req.body.adminId);
-
-        if (admin === null) {
-            return res.json({message: 'User not found'});
-        }
+        req.body.adminId = req.current_user.id;
 
         const group = await models.group.create(req.body);
 
-        await group.addUser(admin);
+        await group.addUser(current_user);
 
         res.json(group);
     }
@@ -87,75 +86,32 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.post('/:id/user/add', async (req, res) => {
+router.post('/:id/users', async (req, res) => {
+    const { emails } = req.body;
+
+    const group = await models.group.findByPk(req.params.id);
+
+    if (group === null) {
+        return res.json({message: 'Group not found'});
+    }
+
+    const admin = await models.user.findByPk(group.adminId);
+
+    if (!emails || !Array.isArray(emails)) {
+        return res.json({message: 'Array of emails required'});
+    }
+
+    if (emails.includes(admin.email)) {
+        emails.splice(emails.indexOf(admin.email), 1);
+    }
+
     try {
-        const { email } = req.body;
-
-        const group = await models.group.findByPk(req.params.id);
-
-        if (group === null) {
-            return res.json({message: 'Group not found'});
-        }
-
-        if (!email) {
-            return res.json({message: 'Email required'});
-        }
-
-        const admin = await models.user.findByPk(group.adminId);
-
-        if (admin === null) {
-            return res.json({message: 'Admin not found'});
-        }
-
-        if (admin.email === email) {
-            return res.json({message: 'Admin already in group'})
-        }
-
-        const user = await models.user.findOne({
-            where: { email }
-        });
-
-        if (user === null) {
-            const userInvitation = await models.invitation.findAll({
-                where: {
-                    email,
-                    groupId: group.id
-                }
-            });
-
-            if (userInvitation.length >= 1) {
-                return res.json({errorMessage: 'User already invited to join this group'})
-            }
-
-            const msg = 'Invitation à télécharger l\'application GrizzLyst';
-            try {
-                await GLMail.sendMail(email, `Demande d'inscription au groupe ${group.name}`, msg);
-            } catch (e) {
-                res.json({error: e.message})
-            }
-
-            await models.invitation.create({
-                email,
-                groupId: group.id
-            });
-            return res.json({message: 'Mail send with success'});
-        }
-
-        await models.invitation.create({
-            email,
-            groupId: group.id
-        });
-
-        const groupUsers = await group.getUsers();
-
-        res.json({
-            message: 'Invitation send with success',
-            groupUsers
-        });
-
+        await GLMail.sendMultipleInvitations(emails, group);
+        await models.invitation.bulkCreate(createInvitationObj(emails, group.id));
+        return res.json({message: 'Invitation send with success'});
     }
     catch (e) {
-        res.json({message: e.message})
+        return res.json({message: e.message});
     }
 });
 
