@@ -52,13 +52,14 @@ router.get('/:id/departments', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        if (!req.body.name || !req.body.date || !req.body.groupId) {
-            return res.json({message: 'Fields name, date and groupId required'})
+        if (!req.body.name || !req.body.date || !req.body.groupId || !req.body.departments) {
+            return res.json({message: 'Fields name, date, departments and groupId required'})
         }
         req.body.state = 0;
         const list = await models.list.create(req.body);
 
-        // ajouter list d id des rayons
+        await list.addDepartments(req.body.departments);
+
         res.json(list);
     }
     catch (e) {
