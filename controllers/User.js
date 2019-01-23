@@ -22,9 +22,8 @@ router.get('/:id', async (req, res) => {
 
 router.get('/:id/invitations', async (req, res) => {
     try {
-        const user = await models.user.findByPk(req.params.id);
         const invitations = await models.invitation.findAll({
-            where: { email: user.email }
+            where: { email: req.current_user.email }
         });
         return res.json(invitations);
     }

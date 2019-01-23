@@ -2,6 +2,15 @@ const express = require('express');
 const router = express.Router();
 const models = require('../models');
 
+router.get('/', async (req, res) => {
+    try {
+        res.json(await models.invitation.findAll());
+    }
+    catch (e) {
+        res.json({message: e.error});
+    }
+});
+
 router.get('/:id', async (req, res) => {
     try {
         res.json(await models.invitation.findByPk(req.params.id));
@@ -11,7 +20,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.get('/:id/group/join', async (req, res) => {
+router.post('/:id/group', async (req, res) => {
     try {
         const invitation = await models.invitation.findByPk(req.params.id);
 

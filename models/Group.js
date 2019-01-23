@@ -12,7 +12,8 @@ module.exports = (sequelize, DataTypes) => {
 
     Group.associate = (models) => {
         models.group.belongsToMany(models.user, { through: 'user_group' });
-        models.group.belongsToMany(models.department, { through: 'favorite' });
+        models.group.belongsToMany(models.department, { through: 'favorite_department' });
+        models.group.belongsToMany(models.product, { through: 'favorite_product' });
     };
 
     return Group;
