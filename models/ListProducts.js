@@ -1,10 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     const ListProducts = sequelize.define('list_product', {
-        state: {
-            // 0: non ajouté
-            // 1: ajouté
-            type: DataTypes.BOOLEAN,
-            allowNull: false
+        quantity: {
+            type: DataTypes.INTEGER,
         }
     });
 

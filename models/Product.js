@@ -9,8 +9,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         quantity: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
+            type: DataTypes.STRING,
         },
         image_url: {
             type: DataTypes.STRING
@@ -45,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
         sodium: {
             type: DataTypes.FLOAT
         },
-        netrient_levels: {
+        nutrient_levels: {
             type: DataTypes.STRING
         },
         nutrition_grade: {

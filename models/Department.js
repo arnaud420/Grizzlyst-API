@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
 
     Department.associate = (models) => {
         models.department.belongsToMany(models.group, { through: 'favorite_department' });
+        models.department.belongsToMany(models.list, { through: 'list_department' });
         models.department.hasMany(models.list_product);
     };
 
