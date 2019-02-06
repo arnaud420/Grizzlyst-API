@@ -19,12 +19,13 @@ class Client {
     async getProduct(productId) {
         try {
             const data = await this.get(productId);
+            const brand = data.product.brands.split(',');
             return {
                 _id: data.code,
                 name: data.product.product_name,
                 quantity: data.product.product_quantity ? data.product.product_quantity : data.product.quantity,
                 image_url: data.product.image_url,
-                brand: data.product.brands,
+                brand: brand[0],
                 satured_fat: data.product.nutriments['saturated-fat_value'],
                 fat: data.product.nutriments.fat,
                 proteins: data.product.nutriments.proteins,

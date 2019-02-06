@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const models = require('../models');
 const { openFoodFactsClient } = require('../helpers/Client');
-const _ = require('lodash');
+const { getProductsFromDepartment } = require('../helpers/list');
 
 router.get('/', async (req, res) => {
     try {
@@ -35,44 +35,13 @@ router.get('/:id/products', async (req, res) => {
     }
 });
 
-router.get('/:id/departments', async (req, res) => {
-    try {
-        const list = await models.list.findOne({
-            where: { id: req.params.id }
-        });
-        const departments = await list.getDepartments();
-        res.json({
-            list,
-            departments
-        });
-    }
-    catch (e) {
-        res.json({message: e.error});
-    }
-});
-
 router.get('/:id/departments/products', async (req, res) => {
     try {
-        const listData = await models.list_product.findAll({
-            where: { listId: req.params.id },
-            include: [
-                { model: models.product },
-                { model: models.department }
-            ],
-            order: [
-                [models.department, 'name', 'ASC']
-            ]
-        });
-        const productsDepartments = _.groupBy(listData, (data) => {
-            return data.department.dataValues.name
-        });
-
-        res.json({
-            productsDepartments
-        });
+        const productsDepartments = await getProductsFromDepartment(req.params.id);
+        res.json(productsDepartments);
     }
     catch (e) {
-        res.json({message: e.error});
+        res.json({message: e});
     }
 });
 
@@ -86,20 +55,42 @@ router.post('/', async (req, res) => {
 
         await list.addDepartments(req.body.departments);
 
-        res.json(list);
+        const departments = await list.getDepartments();
+
+        res.json({
+            list,
+            departments
+        });
     }
     catch (e) {
         res.json({message: e.error});
     }
 });
 
-router.post('/:id/product', async (req, res) => {
+router.post('/:id/department', async (req, res) => {
+    try {
+        const list = await models.list.findByPk(req.params.id);
+
+        if (!req.body.departmentId) {
+            return res.json({message: 'Field departmentId required'});
+        }
+
+        list.addDepartment(req.body.departmentId);
+
+        res.json(await list.getDepartments());
+    }
+    catch (e) {
+        res.json({message: e.error});
+    }
+});
+
+router.post('/:id/department/:departmentId/product', async (req, res) => {
     let product = null;
 
-    const { _id, departmentId } = req.body;
+    const { _id } = req.body;
 
-    if (!_id || !departmentId) {
-        return res.json({message: 'Fields _id and departmentId required'})
+    if (!_id) {
+        return res.json({message: 'Fields _id required'})
     }
 
     product = await models.product.findOne({
@@ -120,7 +111,8 @@ router.post('/:id/product', async (req, res) => {
         const listProduct = await models.list_product.create({
             productId: product.id,
             listId: req.params.id,
-            departmentId: departmentId
+            departmentId: req.params.departmentId,
+            quantity: req.body.quantity
         });
 
         return res.json({
@@ -130,6 +122,79 @@ router.post('/:id/product', async (req, res) => {
     }
     catch (e) {
         return res.json(e);
+    }
+});
+
+router.put('/:id', async (req, res) => {
+    try {
+        await models.list.update(req.body, {
+            where: { id: req.params.id }
+        });
+
+        return res.json({message: 'List updated with success'});
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+router.delete('/:id', async (req, res) => {
+    try {
+        const list = await models.list.findOne({
+            where: { id: req.params.id }
+        });
+
+        if (list === null) {
+            return res.json({message: 'List not found'});
+        }
+
+        await list.destroy();
+        return res.json({message: 'List destroy with success'});
+
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+router.delete('/:id/department/:departmentId', async (req, res) => {
+    try {
+        const list = await models.list.findOne({
+            where: { id: req.params.id }
+        });
+
+        list.removeDepartment(req.params.departmentId);
+
+        return res.json({
+            message: 'Department remove from list with success',
+            list: await list.getDepartments()
+        });
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+router.delete('/:id/department/:departmentId/product/:productId', async (req, res) => {
+    try {
+        const product = await models.list_product.findOne({
+            where: {
+                listId: req.params.id,
+                departmentId: req.params.departmentId,
+                productId: req.params.productId
+            }
+        });
+
+        if (product === null) {
+            return res.json({message: 'Product not found'});
+        }
+
+        await product.destroy();
+
+        res.json({message: 'Product remove from list with success'});
+    }
+    catch (e) {
+        res.json({message: e.message});
     }
 });
 
