@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const models = require('../models');
 const { openFoodFactsClient } = require('../helpers/Client');
+const _ = require('lodash');
 
 router.get('/', async (req, res) => {
     try {
@@ -43,6 +44,31 @@ router.get('/:id/departments', async (req, res) => {
         res.json({
             list,
             departments
+        });
+    }
+    catch (e) {
+        res.json({message: e.error});
+    }
+});
+
+router.get('/:id/departments/products', async (req, res) => {
+    try {
+        const listData = await models.list_product.findAll({
+            where: { listId: req.params.id },
+            include: [
+                { model: models.product },
+                { model: models.department }
+            ],
+            order: [
+                [models.department, 'name', 'ASC']
+            ]
+        });
+        const productsDepartments = _.groupBy(listData, (data) => {
+            return data.department.dataValues.name
+        });
+
+        res.json({
+            productsDepartments
         });
     }
     catch (e) {

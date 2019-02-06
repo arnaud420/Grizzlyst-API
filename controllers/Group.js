@@ -37,7 +37,7 @@ router.get('/:id/users', async (req, res) => {
             return res.json({message: 'No group found'});
         }
 
-        const users = await models.group.getUsers();
+        const users = await group.getUsers();
 
         res.json({group, users});
     }

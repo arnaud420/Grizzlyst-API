@@ -14,6 +14,7 @@ class Client {
             throw new Error(e.message);
         }
     }
+    // https://fr.openfoodfacts.org/cgi/search.pl?search_terms=coke&search_simple=1&action=process&json=1
 
     async getProduct(productId) {
         try {
@@ -36,6 +37,16 @@ class Client {
                 nutrient_levels: JSON.stringify(data.product.nutrient_levels),
                 nutrition_grade: data.product.nutrition_grade_fr
             };
+        }
+        catch (e) {
+            throw new Error(e.message);
+        }
+    }
+
+    async searchProducts(product) {
+        try {
+            const { data } = await axios.get(`${this.url}/cgi/search.pl?search_terms=${product}&search_simple=1&action=process&json=1`);
+            return data;
         }
         catch (e) {
             throw new Error(e.message);
