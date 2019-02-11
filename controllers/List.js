@@ -138,6 +138,30 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+router.put('/:id/product/:productId', async (req, res) => {
+    try {
+        await models.list_product.update(req.body, {
+            where: {
+                listId: req.params.id,
+                productId: req.params.productId
+            }
+        });
+        const product = await models.list_product.findOne({
+            where: {
+                listId: req.params.id,
+                productId: req.params.productId
+            }
+        });
+        return res.json({
+            message: 'Product quantity updated with success',
+            product
+        });
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
 router.delete('/:id', async (req, res) => {
     try {
         const list = await models.list.findOne({

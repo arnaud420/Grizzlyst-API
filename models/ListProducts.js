@@ -2,6 +2,9 @@ module.exports = (sequelize, DataTypes) => {
     const ListProducts = sequelize.define('list_product', {
         quantity: {
             type: DataTypes.INTEGER,
+        },
+        state: {
+            type: DataTypes.BOOLEAN
         }
     });
 
