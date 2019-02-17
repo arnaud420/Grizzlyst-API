@@ -2,6 +2,19 @@ const express = require('express');
 const router = express.Router();
 const models = require('../models');
 
+/**
+ * @swagger
+ *
+ * /api/invitations:
+ *   get:
+ *     tags: [invitations]
+ *     description: Get all invitations
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: invitations
+ */
 router.get('/', async (req, res) => {
     try {
         res.json(await models.invitation.findAll());
@@ -11,6 +24,19 @@ router.get('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/invitations/:id:
+ *   get:
+ *     tags: [invitations]
+ *     description: Get invitation by id
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: invitation
+ */
 router.get('/:id', async (req, res) => {
     try {
         res.json(await models.invitation.findByPk(req.params.id));
@@ -20,6 +46,19 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/invitations/:id/group:
+ *   post:
+ *     tags: [invitations]
+ *     description: Join a group by user invitation
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: invitations
+ */
 router.post('/:id/group', async (req, res) => {
     try {
         const invitation = await models.invitation.findByPk(req.params.id);

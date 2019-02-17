@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const models = require('../models');
 
+/**
+ * @swagger
+ * /users:
+ *    get:
+ *      description: This should return all users
+ */
 router.get('/', async (req, res) => {
     try {
         res.json(await models.user.findAll());

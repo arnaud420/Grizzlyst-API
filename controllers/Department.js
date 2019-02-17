@@ -2,6 +2,19 @@ const express = require('express');
 const router = express.Router();
 const models = require('../models');
 
+/**
+ * @swagger
+ *
+ * /api/departments:
+ *   get:
+ *     tags: [departments]
+ *     description: Get all departments
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: departments
+ */
 router.get('/', async (req, res) => {
     try {
         res.json(await models.department.findAll());
@@ -11,6 +24,19 @@ router.get('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/departments/:id:
+ *   get:
+ *     tags: [departments]
+ *     description: Get department by id
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: department
+ */
 router.get('/:id', async (req, res) => {
     try {
         res.json(await models.department.findByPk(req.params.id));
@@ -20,6 +46,25 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/departments:
+ *   post:
+ *     tags: [departments]
+ *     description: Create a new department
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: name
+ *         description: Name for the department
+ *         in: formData
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: department
+ */
 router.post('/', async (req, res) => {
     try {
         if (!req.body.name) {
@@ -33,6 +78,25 @@ router.post('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/departments/:id:
+ *   put:
+ *     tags: [departments]
+ *     description: Update an existing department
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: name
+ *         description: Name for the department
+ *         in: formData
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: department
+ */
 router.put('/:id', async (req, res) => {
     try {
         await models.department.update(req.body, {
@@ -46,6 +110,19 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/departments/:id:
+ *   delete:
+ *     tags: [departments]
+ *     description: Delete a department
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: department
+ */
 router.delete('/:id', async (req, res) => {
     try {
         const department = await models.department.findOne({

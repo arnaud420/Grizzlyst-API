@@ -3,15 +3,18 @@ const app = express();
 const bodyParser = require('body-parser');
 const db = require('./models');
 const jwt = require('./middlewares/jwt');
+const swaggerDoc = require('./helpers/swaggerDoc');
+const swaggerUi = require('swagger-ui-express');
 
 db.sequelize.sync();
 
-// Middlewares
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use('/api/documentation', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+
 app.use(jwt);
 
-// Routes
 app.use('/api', require('./routes'));
 
 app.listen(8080);

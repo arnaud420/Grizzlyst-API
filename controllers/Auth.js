@@ -4,6 +4,30 @@ const router = express.Router();
 const models = require('../models');
 const { generateToken } = require('../helpers/jwt');
 
+/**
+ * @swagger
+ *
+ * /api/auth/login:
+ *   post:
+ *     tags: [auth]
+ *     description: Login to the application
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: email
+ *         description: Email to use for login.
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: password
+ *         description: User's password.
+ *         in: formData
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: user, token
+ */
 router.post('/login', async (req, res) => {
     if (req.method !== 'POST') {
         return res.status(401).send({message: 'Method not allowed'});
@@ -44,6 +68,50 @@ router.post('/login', async (req, res) => {
 
 });
 
+/**
+ * @swagger
+ *
+ * /api/auth/signup:
+ *   post:
+ *     tags: [auth]
+ *     description: Signup to the application
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: email
+ *         description: Email to use for login.
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: firstname
+ *         description: User's firstname.
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: lastname
+ *         description: User's lastname.
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: pseudo
+ *         description: User's pseudo.
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: password
+ *         description: User's password.
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: confirmPassword
+ *         description: User's confirmation password.
+ *         in: formData
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: user, token
+ */
 router.post('/signup', async (req, res) => {
     if (req.method !== 'POST') {
         return res.status(401).send({message: 'Method not allowed'});

@@ -2,8 +2,13 @@ const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../config/secret');
 const models = require('../models');
 
+const ignoredRoutes = [
+    '/api/auth/login',
+    '/api/auth/signup'
+];
+
 const jwtMiddleware = (req, res, next) => {
-    if (req.url === '/api/auth/login' || req.url === '/api/auth/signup') {
+    if (ignoredRoutes.indexOf(req.url) !== -1) {
         return next();
     }
 

@@ -4,6 +4,19 @@ const models = require('../models');
 const GLMail = require('../helpers/GLMail');
 const { createInvitationObj } = require('../helpers/group');
 
+/**
+ * @swagger
+ *
+ * /api/groups:
+ *   get:
+ *     tags: [groups]
+ *     description: Get all groups
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: groups
+ */
 router.get('/', async (req, res) => {
     try {
         const groups = await models.group.findAll();
@@ -14,6 +27,19 @@ router.get('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/groups/:id:
+ *   get:
+ *     tags: [groups]
+ *     description: Get group by id
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: groups
+ */
 router.get('/:id', async (req, res) => {
     try {
         const group = await models.group.findByPk(req.params.id);
@@ -29,6 +55,19 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/groups/:id/users:
+ *   get:
+ *     tags: [groups]
+ *     description: Get users belongs to a group
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: group, users
+ */
 router.get('/:id/users', async (req, res) => {
     try {
         const group = await models.group.findByPk(req.params.id);
@@ -46,6 +85,19 @@ router.get('/:id/users', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/groups/:id/lists:
+ *   get:
+ *     tags: [groups]
+ *     description: Get lists belongs to a group
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: group, lists
+ */
 router.get('/:id/lists', async (req, res) => {
     try {
         const group = await models.group.findByPk(req.params.id);
@@ -65,6 +117,30 @@ router.get('/:id/lists', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/groups:
+ *   post:
+ *     tags: [groups]
+ *     description: Create a new group
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: name
+ *         description: Name for the group
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: adminId
+ *         description: User admin for the group
+ *         in: formData
+ *         required: true
+ *         type: int
+ *     responses:
+ *       200:
+ *         description: group
+ */
 router.post('/', async (req, res) => {
     try {
         const { current_user } = req;
@@ -86,6 +162,25 @@ router.post('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/groups/:id/users:
+ *   post:
+ *     tags: [groups]
+ *     description: Create a new group
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: emails
+ *         description: Emails array for send invitation to users
+ *         in: formData
+ *         required: true
+ *         type: array
+ *     responses:
+ *       200:
+ *         description: send invitation by mail
+ */
 router.post('/:id/users', async (req, res) => {
     const { emails } = req.body;
 
@@ -115,6 +210,19 @@ router.post('/:id/users', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/groups/:id:
+ *   put:
+ *     tags: [groups]
+ *     description: Update a group
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: group
+ */
 router.put('/:id', async (req, res) => {
     try {
         if (req.body.adminId) {
@@ -132,6 +240,19 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/groups/:id:
+ *   delete:
+ *     tags: [groups]
+ *     description: Delete a group
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: group
+ */
 router.delete('/:id', async (req, res) => {
     try {
         const group = await models.group.findOne({
@@ -157,6 +278,19 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/groups/:id/user/:userId:
+ *   delete:
+ *     tags: [groups]
+ *     description: Remove a user from a group
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: group, usersGroup
+ */
 router.delete('/:id/user/:userId', async (req, res) => {
     try {
         const group = await models.group.findByPk(req.params.id);

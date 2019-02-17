@@ -4,6 +4,19 @@ const models = require('../models');
 const { openFoodFactsClient } = require('../helpers/Client');
 const { getProductsFromDepartment } = require('../helpers/list');
 
+/**
+ * @swagger
+ *
+ * /api/lists:
+ *   get:
+ *     tags: [lists]
+ *     description: Get all lists
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: lists
+ */
 router.get('/', async (req, res) => {
     try {
         res.json(await models.list.findAll());
@@ -13,6 +26,19 @@ router.get('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists/:id:
+ *   get:
+ *     tags: [lists]
+ *     description: Get list by id
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: list
+ */
 router.get('/:id', async (req, res) => {
     try {
         res.json(await models.list.findByPk(req.params.id));
@@ -22,6 +48,19 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists/:id/products:
+ *   get:
+ *     tags: [lists]
+ *     description: Get products belongs to a list
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: products
+ */
 router.get('/:id/products', async (req, res) => {
     try {
         const products = await models.list_product.findAll({
@@ -35,6 +74,19 @@ router.get('/:id/products', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists/:id/departments/products:
+ *   get:
+ *     tags: [lists]
+ *     description: Get products order by departments belongs to a list
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: productsDepartments
+ */
 router.get('/:id/departments/products', async (req, res) => {
     try {
         const productsDepartments = await getProductsFromDepartment(req.params.id);
@@ -45,6 +97,40 @@ router.get('/:id/departments/products', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists:
+ *   post:
+ *     tags: [lists]
+ *     description: Create a new list
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: name
+ *         description: Name for the list
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: date
+ *         description: beginning date of list
+ *         in: formData
+ *         required: true
+ *         type: date
+ *       - name: groupId
+ *         description: groupId belong to list
+ *         in: formData
+ *         required: true
+ *         type: int
+ *       - name: departments
+ *         description: Array of department ids
+ *         in: formData
+ *         required: true
+ *         type: array
+ *     responses:
+ *       200:
+ *         description: list, departments
+ */
 router.post('/', async (req, res) => {
     try {
         if (!req.body.name || !req.body.date || !req.body.groupId || !req.body.departments) {
@@ -67,6 +153,25 @@ router.post('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists/:id/department:
+ *   post:
+ *     tags: [lists]
+ *     description: Add a new department to list
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: departmentId
+ *         description: add department to list
+ *         in: formData
+ *         required: true
+ *         type: int
+ *     responses:
+ *       200:
+ *         description: departments
+ */
 router.post('/:id/department', async (req, res) => {
     try {
         const list = await models.list.findByPk(req.params.id);
@@ -84,6 +189,25 @@ router.post('/:id/department', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists/:id/department/:departmentId/product:
+ *   post:
+ *     tags: [lists]
+ *     description: Add a new product to a department belongs to a list.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: _id
+ *         description: Product _id from openFoodFact API
+ *         in: formData
+ *         required: true
+ *         type: int
+ *     responses:
+ *       200:
+ *         description: listProduct
+ */
 router.post('/:id/department/:departmentId/product', async (req, res) => {
     let product = null;
 
@@ -138,6 +262,19 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists/:id/product/:productId:
+ *   put:
+ *     tags: [lists]
+ *     description: Update list_product table.
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: listProduct
+ */
 router.put('/:id/product/:productId', async (req, res) => {
     try {
         await models.list_product.update(req.body, {
@@ -162,6 +299,16 @@ router.put('/:id/product/:productId', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists/:id:
+ *   delete:
+ *     tags: [lists]
+ *     description: Delete a list
+ *     produces:
+ *       - application/json
+ */
 router.delete('/:id', async (req, res) => {
     try {
         const list = await models.list.findOne({
@@ -181,6 +328,16 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists/:id/department/:departmentId:
+ *   delete:
+ *     tags: [lists]
+ *     description: Remove a department from a list
+ *     produces:
+ *       - application/json
+ */
 router.delete('/:id/department/:departmentId', async (req, res) => {
     try {
         const list = await models.list.findOne({
@@ -199,6 +356,16 @@ router.delete('/:id/department/:departmentId', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists/:id/department/:departmentId/product/:productId:
+ *   delete:
+ *     tags: [lists]
+ *     description: Remove and delete a product from a list
+ *     produces:
+ *       - application/json
+ */
 router.delete('/:id/department/:departmentId/product/:productId', async (req, res) => {
     try {
         const product = await models.list_product.findOne({
