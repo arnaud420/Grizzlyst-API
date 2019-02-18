@@ -236,7 +236,8 @@ router.post('/:id/department/:departmentId/product', async (req, res) => {
             productId: product.id,
             listId: req.params.id,
             departmentId: req.params.departmentId,
-            quantity: req.body.quantity
+            quantity: req.body.quantity,
+            state: 0
         });
 
         return res.json({
@@ -245,7 +246,7 @@ router.post('/:id/department/:departmentId/product', async (req, res) => {
         })
     }
     catch (e) {
-        return res.json(e);
+        return res.status(500).json(e);
     }
 });
 

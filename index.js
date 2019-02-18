@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use('/api/documentation', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
-app.use(jwt);
+// app.use(jwt);
 
 app.use('/api', require('./routes'));
 
