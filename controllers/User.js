@@ -4,9 +4,16 @@ const models = require('../models');
 
 /**
  * @swagger
- * /users:
- *    get:
- *      description: This should return all users
+ *
+ * /api/users:
+ *   get:
+ *     tags: [users]
+ *     description: Get all users
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: users
  */
 router.get('/', async (req, res) => {
     try {
@@ -17,6 +24,19 @@ router.get('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/users:
+ *   get:
+ *     tags: [users]
+ *     description: Get a user by id
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: user
+ */
 router.get('/:id', async (req, res) => {
     try {
         res.json(await models.user.findByPk(req.params.id));
@@ -26,6 +46,19 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/users/:id/invitations:
+ *   get:
+ *     tags: [users]
+ *     description: Get user's invitations
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: invitations
+ */
 router.get('/:id/invitations', async (req, res) => {
     try {
         const invitations = await models.invitation.findAll({
