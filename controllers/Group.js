@@ -162,6 +162,69 @@ router.get('/:id/no-buy-products', async (req, res) => {
 /**
  * @swagger
  *
+ * /api/groups/:id/favorite/products:
+ *   get:
+ *     tags: [groups]
+ *     description: Get favorites group's products
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: group, favorites
+ */
+router.get('/:id/favorite/products', async (req, res) => {
+    try {
+        const group = await models.group.findByPk(req.params.id);
+        if (group === null) {
+            return res.json({message: 'No group found'});
+        }
+        const favorites = await group.getProducts();
+        res.json({group, favorites});
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+/**
+ * @swagger
+ *
+ * /api/groups/:id/favorite/products:
+ *   post:
+ *     tags: [groups]
+ *     description: Insert a product in group's favorite
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: productId
+ *         description: Product id
+ *         in: formData
+ *         required: true
+ *         type: int
+ *     responses:
+ *       200:
+ *         description: group, favorites
+ */
+router.post('/:id/favorite/products', async (req, res) => {
+    try {
+        const group = await models.group.findByPk(req.params.id);
+        if (group === null) {
+            return res.json({message: 'No group found'});
+        }
+        const favorites = await models.favorite_product.create({
+            groupId: req.params.id,
+            productId: req.body.productId
+        });
+        res.json({group, favorites});
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+/**
+ * @swagger
+ *
  * /api/groups:
  *   post:
  *     tags: [groups]
