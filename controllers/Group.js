@@ -120,6 +120,48 @@ router.get('/:id/lists', async (req, res) => {
 /**
  * @swagger
  *
+ * /api/groups/:id/no-buy-products:
+ *   get:
+ *     tags: [groups]
+ *     description: Get non buy products from group by list
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: lists
+ */
+router.get('/:id/no-buy-products', async (req, res) => {
+    try {
+        const group =  await models.group.findByPk(req.params.id);
+        if (group === null) {
+            return res.json({message: 'No group found'});
+        }
+        // get finished lists
+        const lists = await models.list.findAll({
+            where: {
+                groupId: group.id,
+                state: 3
+            },
+            include: [{
+                model: models.list_product,
+                where: {
+                    state: 0
+                },
+                include: [{
+                    model: models.product
+                }]
+            }]
+        });
+        res.json(lists);
+    }
+    catch (e) {
+        res.json({message: e.error});
+    }
+});
+
+/**
+ * @swagger
+ *
  * /api/groups:
  *   post:
  *     tags: [groups]

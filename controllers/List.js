@@ -204,6 +204,11 @@ router.post('/:id/department', async (req, res) => {
  *         in: formData
  *         required: true
  *         type: int
+ *       - name: quantity
+ *         description: Product quantity
+ *         in: formData
+ *         required: false
+ *         type: int
  *     responses:
  *       200:
  *         description: listProduct
@@ -211,7 +216,7 @@ router.post('/:id/department', async (req, res) => {
 router.post('/:id/department/:departmentId/product', async (req, res) => {
     let product = null;
 
-    const { _id } = req.body;
+    const { _id, quantity } = req.body;
 
     if (!_id) {
         return res.json({message: 'Fields _id required'})
@@ -236,7 +241,7 @@ router.post('/:id/department/:departmentId/product', async (req, res) => {
             productId: product.id,
             listId: req.params.id,
             departmentId: req.params.departmentId,
-            quantity: req.body.quantity,
+            quantity,
             state: 0
         });
 
