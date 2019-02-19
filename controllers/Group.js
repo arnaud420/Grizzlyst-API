@@ -285,6 +285,8 @@ router.post('/', async (req, res) => {
  *     responses:
  *       200:
  *         description: send invitation by mail
+ *       500:
+ *         Emails already exists for this group invitation
  */
 router.post('/:id/users', async (req, res) => {
     const { emails } = req.body;
@@ -299,6 +301,19 @@ router.post('/:id/users', async (req, res) => {
 
     if (!emails || !Array.isArray(emails)) {
         return res.json({message: 'Array of emails required'});
+    }
+
+    const emailsAlreadyExists = await models.invitation.findAll({
+        where: {
+            groupId: req.params.id,
+            email: { [models.Sequelize.Op.in]: emails }
+        }});
+
+    if (emailsAlreadyExists.length) {
+        return res.json({
+            error: "Email already send",
+            emails: emailsAlreadyExists
+        });
     }
 
     if (emails.includes(admin.email)) {
