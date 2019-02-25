@@ -49,6 +49,23 @@ router.get('/:id', async (req, res) => {
 /**
  * @swagger
  *
+ * /api/users/me:
+ *   post:
+ *     tags: [users]
+ *     description: Get a user by token bearer
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: user
+ */
+router.post('/me', async (req, res) => {
+    res.json(req.current_user);
+});
+
+/**
+ * @swagger
+ *
  * /api/users/:id/invitations:
  *   get:
  *     tags: [users]
