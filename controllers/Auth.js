@@ -118,11 +118,11 @@ router.post('/signup', async (req, res) => {
     }
 
     if (req.body.password !== req.body.confirmPassword) {
-        res.status(401).send({message: 'Password doesn\'t match'});
+        return res.status(401).send({message: 'Password doesn\'t match'});
     }
 
     if (!req.body.firstname || !req.body.name || !req.body.pseudo) {
-        res.status(401).send({message: 'Firstname, name and pseudo required'});
+        return res.status(401).send({message: 'Firstname, name and pseudo required'});
     }
 
     try {
