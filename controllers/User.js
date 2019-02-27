@@ -70,17 +70,17 @@ router.post('/me', async (req, res) => {
 /**
  * @swagger
  *
- * /api/users/:id/invitations:
+ * /api/users/me/invitations:
  *   get:
  *     tags: [users]
- *     description: Get user's invitations
+ *     description: Get user's invitations by his token
  *     produces:
  *       - application/json
  *     responses:
  *       200:
  *         description: invitations
  */
-router.get('/:id/invitations', async (req, res) => {
+router.get('/me/invitations', async (req, res) => {
     try {
         const invitations = await models.invitation.findAll({
             where: { email: req.current_user.email },
