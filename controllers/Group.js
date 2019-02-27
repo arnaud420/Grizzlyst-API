@@ -244,7 +244,7 @@ router.post('/:id/favorite/products', async (req, res) => {
  *         type: array
  *     responses:
  *       200:
- *         description: {message: 'Invitation send with success'}
+ *         description: Invitation send with success
  */
 router.post('/', async (req, res) => {
     const admin = req.current_user;
