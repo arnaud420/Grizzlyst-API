@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const models = require('../models');
-const { generateToken } = require('../helpers/jwt');
 
 /**
  * @swagger
@@ -46,53 +45,5 @@ router.get('/:id', async (req, res) => {
         res.json({message: e.error});
     }
 });
-
-/**
- * @swagger
- *
- * /api/users/me:
- *   post:
- *     tags: [users]
- *     description: Get a user by token bearer
- *     produces:
- *       - application/json
- *     responses:
- *       200:
- *         description: return user
- */
-router.post('/me', async (req, res) => {
-    res.json({
-        user: req.current_user,
-        token: generateToken(req.current_user.id)
-    });
-});
-
-/**
- * @swagger
- *
- * /api/users/me/invitations:
- *   get:
- *     tags: [users]
- *     description: Get user's invitations by his token
- *     produces:
- *       - application/json
- *     responses:
- *       200:
- *         description: invitations
- */
-router.get('/me/invitations', async (req, res) => {
-    try {
-        const invitations = await models.invitation.findAll({
-            where: { email: req.current_user.email },
-            include: ['group']
-        });
-        return res.json(invitations);
-    }
-    catch (e) {
-        res.json({message: e.error});
-    }
-});
-
-
 
 module.exports = router;
