@@ -83,7 +83,8 @@ router.post('/me', async (req, res) => {
 router.get('/:id/invitations', async (req, res) => {
     try {
         const invitations = await models.invitation.findAll({
-            where: { email: req.current_user.email }
+            where: { email: req.current_user.email },
+            include: ['group']
         });
         return res.json(invitations);
     }
