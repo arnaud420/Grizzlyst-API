@@ -237,11 +237,11 @@ router.post('/:id/favorite/products', async (req, res) => {
  *         in: formData
  *         required: true
  *         type: string
- *       - name: adminId
- *         description: User admin for the group
+ *       - name: emails
+ *         description: Emails array for send invitation to users
  *         in: formData
  *         required: true
- *         type: int
+ *         type: array
  *     responses:
  *       200:
  *         description: {message: 'Invitation send with success'}
