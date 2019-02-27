@@ -244,23 +244,34 @@ router.post('/:id/favorite/products', async (req, res) => {
  *         type: int
  *     responses:
  *       200:
- *         description: group
+ *         description: {message: 'Invitation send with success'}
  */
 router.post('/', async (req, res) => {
-    try {
-        const { current_user } = req;
+    const admin = req.current_user;
+    const { name, emails } = req.body;
 
-        if (!req.body.name) {
-            return res.json({message: 'Name required'})
+    if (!name) {
+        return res.json({message: 'Name required'})
+    }
+    if (!emails || !Array.isArray(emails)) {
+        return res.json({message: 'Array of emails required'});
+    }
+
+    try {
+        const group = await models.group.create({
+            adminId: admin.id,
+            name
+        });
+        await group.addUser(admin);
+
+        if (emails.includes(admin.email)) {
+            emails.splice(emails.indexOf(admin.email), 1);
         }
 
-        req.body.adminId = req.current_user.id;
+        await GLMail.sendMultipleInvitations(emails, group);
+        await models.invitation.bulkCreate(createInvitationObj(emails, group.id));
+        return res.json({message: 'Invitation send with success'});
 
-        const group = await models.group.create(req.body);
-
-        await group.addUser(current_user);
-
-        res.json(group);
     }
     catch (e) {
         res.json({message: e.message});
