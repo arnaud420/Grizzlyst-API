@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const models = require('../models');
+const { generateToken } = require('../helpers/jwt');
 
 /**
  * @swagger
@@ -57,10 +58,13 @@ router.get('/:id', async (req, res) => {
  *       - application/json
  *     responses:
  *       200:
- *         description: user
+ *         description: return user
  */
 router.post('/me', async (req, res) => {
-    res.json(req.current_user);
+    res.json({
+        user: req.current_user,
+        token: generateToken(req.current_user.id)
+    });
 });
 
 /**
