@@ -5,7 +5,16 @@ module.exports = {
     getProductsFromDepartment: async (listId) => {
         try {
             const query = await models.sequelize.query(`
-            SELECT d.id AS departmentID, d.name AS departmentName, p.id, p.name, p.quantity, p.brand, p.nutrition_grade, lp.quantity
+            SELECT 
+                d.id AS departmentId, 
+                d.name AS departmentName, 
+                p.id, 
+                p.name, 
+                p.quantity as weight, 
+                p.brand, 
+                p.nutrition_grade, 
+                p.image_url, 
+                lp.quantity
             FROM list_departments ld
             LEFT JOIN list_products lp
             ON ld.departmentId = lp.departmentId

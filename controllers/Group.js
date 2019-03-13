@@ -270,7 +270,7 @@ router.post('/', async (req, res) => {
 
         await GLMail.sendMultipleInvitations(emails, group);
         await models.invitation.bulkCreate(createInvitationObj(emails, group.id));
-        return res.json({message: 'Invitation send with success'});
+        return res.json(group);
 
     }
     catch (e) {
