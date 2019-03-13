@@ -85,4 +85,35 @@ router.post('/:id/group', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/invitations/:id:
+ *   delete:
+ *     tags: [invitations]
+ *     description: Delete invitation
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: invitation destroy
+ */
+router.delete('/:id', async (req, res) => {
+    try {
+        const invitation = await models.invitation.findOne({
+            where: { id: req.params.id }
+        });
+
+        if (invitation === null) {
+            return res.json({message: 'Invitation not found'});
+        }
+
+        await invitation.destroy();
+        return res.json({message: 'Invitation destroy with success'});
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
 module.exports = router;
