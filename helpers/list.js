@@ -15,14 +15,12 @@ module.exports = {
                 p.nutrition_grade, 
                 p.image_url, 
                 lp.quantity
-            FROM list_departments ld
-            LEFT JOIN list_products lp
-            ON ld.departmentId = lp.departmentId
-            LEFT JOIN products p 
-            ON p.id = lp.productId
-            LEFT JOIN departments d 
-            ON d.id = ld.departmentId
-            WHERE ld.listId = ${listId}`, { type: models.sequelize.QueryTypes.SELECT });
+            FROM list_products lp 
+            JOIN departments d 
+            ON lp.departmentId = d.id 
+            JOIN products p 
+            ON lp.productId = p.id 
+            WHERE lp.listId = ${listId}`, { type: models.sequelize.QueryTypes.SELECT });
 
             return _.groupBy(query, (data) => data.departmentName);
         }

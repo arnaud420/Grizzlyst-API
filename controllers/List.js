@@ -247,7 +247,7 @@ router.post('/:id/department/:departmentId/product', async (req, res) => {
 
         return res.json({
             message: 'Product add to list with success',
-            listProduct
+            product
         })
     }
     catch (e) {
