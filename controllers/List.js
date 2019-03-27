@@ -66,7 +66,9 @@ router.get('/:id/products', async (req, res) => {
     try {
         const products = await models.list_product.findAll({
             where: { listId: req.params.id },
-            include: ['product']
+            include: [{
+                model: models.product,
+            }]
         });
 
         res.json(products);
@@ -221,7 +223,7 @@ router.post('/:id/department', async (req, res) => {
 
         await list.addDepartment(req.body.departmentId);
 
-        res.json(await list.getDepartments());
+        res.json(await models.department.findByPk(req.body.departmentId));
     }
     catch (e) {
         res.json({message: e.error});
