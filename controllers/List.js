@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const _ = require('lodash');
 const models = require('../models');
 const { openFoodFactsClient } = require('../helpers/Client');
-const { getProductsFromDepartment } = require('../helpers/list');
+const { getProductsFromDepartment, getDepartments } = require('../helpers/list');
 
 /**
  * @swagger
@@ -67,11 +68,35 @@ router.get('/:id/products', async (req, res) => {
             where: { listId: req.params.id },
             include: ['product']
         });
+
         res.json(products);
     }
     catch (e) {
         res.json({message: e.error});
     }
+});
+
+/**
+ * @swagger
+ *
+ * /api/lists/:id/departments:
+ *   get:
+ *     tags: [lists]
+ *     description: Get departments belongs to a list
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: departments
+ */
+router.get('/:id/departments', async (req, res) => {
+   try {
+       const departments = await getDepartments(req.params.id);
+       res.json(departments);
+   }
+   catch (e) {
+       res.json({message: e.error});
+   }
 });
 
 /**
@@ -89,11 +114,25 @@ router.get('/:id/products', async (req, res) => {
  */
 router.get('/:id/departments/products', async (req, res) => {
     try {
-        const productsDepartments = await getProductsFromDepartment(req.params.id);
-        res.json(productsDepartments);
+        // const productsDepartments = await getProductsFromDepartment(req.params.id);
+
+        const departments = await getDepartments(req.params.id);
+        const products = await models.list_product.findAll({
+            where: { listId: req.params.id },
+            include: ['product']
+        });
+        let productsByDepartments = _.groupBy(products, (data) => data.departmentId);
+
+        for (let i in departments) {
+            let departmentId = departments[i].id;
+
+            departments[i].products = (departmentId in productsByDepartments) ? productsByDepartments[departmentId] : [];
+        }
+
+        res.json(departments);
     }
     catch (e) {
-        res.json({message: e});
+        res.json({message: e.message});
     }
 });
 
@@ -180,7 +219,7 @@ router.post('/:id/department', async (req, res) => {
             return res.json({message: 'Field departmentId required'});
         }
 
-        list.addDepartment(req.body.departmentId);
+        await list.addDepartment(req.body.departmentId);
 
         res.json(await list.getDepartments());
     }
