@@ -366,6 +366,19 @@ router.post('/:id/department/:departmentId/product', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists/:id:
+ *   put:
+ *     tags: [lists]
+ *     description: edit a list.
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: listProduct
+ */
 router.put('/:id', async (req, res) => {
     try {
         await models.list.update(req.body, {
