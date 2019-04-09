@@ -222,8 +222,9 @@ router.post('/:id/department', async (req, res) => {
         }
 
         await list.addDepartment(req.body.departmentId);
+        const department = await models.department.findByPk(req.body.departmentId);
 
-        res.json(await models.department.findByPk(req.body.departmentId));
+        res.json(department);
     }
     catch (e) {
         res.json({message: e.error});
@@ -424,7 +425,7 @@ router.delete('/:id/department/:departmentId/product/:productId', async (req, re
         });
 
         if (product === null) {
-            return res.json({message: 'Product not found'});
+            return res.status(404).json({message: 'Product not found'});
         }
 
         await product.destroy();
