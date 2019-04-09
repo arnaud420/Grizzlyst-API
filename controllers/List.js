@@ -138,6 +138,76 @@ router.get('/:id/departments/products', async (req, res) => {
     }
 });
 
+// en test
+/**
+ * @swagger
+ *
+ * /api/lists/:id/departments/products/completed:
+ *   get:
+ *     tags: [lists]
+ *     description: Get products order by departments belongs to a list
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: productsDepartments
+ */
+router.get('/:id/departments/products/completed', async (req, res) => {
+    try {
+        const products = await models.list_product.findAll({
+            where: {
+                listId: req.params.id,
+                state: 1
+            },
+            include: ['product']
+        });
+        res.json(products);
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+/**
+ * @swagger
+ *
+ * /api/lists/:id/departments/products/progress:
+ *   get:
+ *     tags: [lists]
+ *     description: Get products order by departments belongs to a list
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: productsDepartments
+ */
+router.get('/:id/departments/products/progress', async (req, res) => {
+    try {
+        const departments = await getDepartments(req.params.id);
+        const products = await models.list_product.findAll({
+            where: {
+                listId: req.params.id,
+                state: 0
+            },
+            include: ['product']
+        });
+        let productsByDepartments = _.groupBy(products, (data) => data.departmentId);
+
+        for (let i in departments) {
+            let departmentId = departments[i].id;
+
+            departments[i].products = (departmentId in productsByDepartments) ? productsByDepartments[departmentId] : [];
+        }
+
+        res.json(departments);
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+// fin en test
+
 /**
  * @swagger
  *
@@ -297,6 +367,19 @@ router.post('/:id/department/:departmentId/product', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists/:id:
+ *   put:
+ *     tags: [lists]
+ *     description: edit a list.
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: listProduct
+ */
 router.put('/:id', async (req, res) => {
     try {
         await models.list.update(req.body, {
