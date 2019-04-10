@@ -107,7 +107,11 @@ router.get('/:id/lists', async (req, res) => {
         }
 
         const lists = await models.list.findAll({
-            where: { groupId: group.id }
+            where: { groupId: group.id },
+            order: [
+                ['state', 'ASC'],
+                ['date', 'DESC'],
+            ],
         });
 
         res.json({group, lists});
