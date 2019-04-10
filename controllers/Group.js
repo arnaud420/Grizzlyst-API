@@ -272,7 +272,7 @@ router.post('/', async (req, res) => {
             emails.splice(emails.indexOf(admin.email), 1);
         }
 
-        await GLMail.sendMultipleInvitations(emails, group);
+        // await GLMail.sendMultipleInvitations(emails, group);
         await models.invitation.bulkCreate(createInvitationObj(emails, group.id));
         return res.json(group);
 
