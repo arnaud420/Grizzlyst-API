@@ -107,10 +107,119 @@ router.get('/:id/lists', async (req, res) => {
         }
 
         const lists = await models.list.findAll({
-            where: { groupId: group.id }
+            where: { groupId: group.id },
+            order: [
+                ['state', 'ASC'],
+                ['date', 'DESC'],
+            ],
         });
 
         res.json({group, lists});
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+/**
+ * @swagger
+ *
+ * /api/groups/:id/no-buy-products:
+ *   get:
+ *     tags: [groups]
+ *     description: Get non buy products from group by list
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: lists
+ */
+router.get('/:id/no-buy-products', async (req, res) => {
+    try {
+        const group =  await models.group.findByPk(req.params.id);
+        if (group === null) {
+            return res.json({message: 'No group found'});
+        }
+        // get finished lists
+        const lists = await models.list.findAll({
+            where: {
+                groupId: group.id,
+                state: 3
+            },
+            include: [{
+                model: models.list_product,
+                where: {
+                    state: 0
+                },
+                include: [{
+                    model: models.product
+                }]
+            }]
+        });
+        res.json(lists);
+    }
+    catch (e) {
+        res.json({message: e.error});
+    }
+});
+
+/**
+ * @swagger
+ *
+ * /api/groups/:id/favorite/products:
+ *   get:
+ *     tags: [groups]
+ *     description: Get favorites group's products
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: group, favorites
+ */
+router.get('/:id/favorite/products', async (req, res) => {
+    try {
+        const group = await models.group.findByPk(req.params.id);
+        if (group === null) {
+            return res.json({message: 'No group found'});
+        }
+        const favorites = await group.getProducts();
+        res.json({group, favorites});
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+/**
+ * @swagger
+ *
+ * /api/groups/:id/favorite/products:
+ *   post:
+ *     tags: [groups]
+ *     description: Insert a product in group's favorite
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: productId
+ *         description: Product id
+ *         in: formData
+ *         required: true
+ *         type: int
+ *     responses:
+ *       200:
+ *         description: group, favorites
+ */
+router.post('/:id/favorite/products', async (req, res) => {
+    try {
+        const group = await models.group.findByPk(req.params.id);
+        if (group === null) {
+            return res.json({message: 'No group found'});
+        }
+        const favorites = await models.favorite_product.create({
+            groupId: req.params.id,
+            productId: req.body.productId
+        });
+        res.json({group, favorites});
     }
     catch (e) {
         res.json({message: e.message});
@@ -132,30 +241,41 @@ router.get('/:id/lists', async (req, res) => {
  *         in: formData
  *         required: true
  *         type: string
- *       - name: adminId
- *         description: User admin for the group
+ *       - name: emails
+ *         description: Emails array for send invitation to users
  *         in: formData
  *         required: true
- *         type: int
+ *         type: array
  *     responses:
  *       200:
- *         description: group
+ *         description: Invitation send with success
  */
 router.post('/', async (req, res) => {
-    try {
-        const { current_user } = req;
+    const admin = req.current_user;
+    const { name, emails } = req.body;
 
-        if (!req.body.name) {
-            return res.json({message: 'Name required'})
+    if (!name) {
+        return res.json({message: 'Name required'})
+    }
+    if (!emails || !Array.isArray(emails)) {
+        return res.json({message: 'Array of emails required'});
+    }
+
+    try {
+        const group = await models.group.create({
+            adminId: admin.id,
+            name
+        });
+        await group.addUser(admin);
+
+        if (emails.includes(admin.email)) {
+            emails.splice(emails.indexOf(admin.email), 1);
         }
 
-        req.body.adminId = req.current_user.id;
+        // await GLMail.sendMultipleInvitations(emails, group);
+        await models.invitation.bulkCreate(createInvitationObj(emails, group.id));
+        return res.json(group);
 
-        const group = await models.group.create(req.body);
-
-        await group.addUser(current_user);
-
-        res.json(group);
     }
     catch (e) {
         res.json({message: e.message});
@@ -180,6 +300,8 @@ router.post('/', async (req, res) => {
  *     responses:
  *       200:
  *         description: send invitation by mail
+ *       500:
+ *         Emails already exists for this group invitation
  */
 router.post('/:id/users', async (req, res) => {
     const { emails } = req.body;
@@ -194,6 +316,19 @@ router.post('/:id/users', async (req, res) => {
 
     if (!emails || !Array.isArray(emails)) {
         return res.json({message: 'Array of emails required'});
+    }
+
+    const emailsAlreadyExists = await models.invitation.findAll({
+        where: {
+            groupId: req.params.id,
+            email: { [models.Sequelize.Op.in]: emails }
+        }});
+
+    if (emailsAlreadyExists.length) {
+        return res.json({
+            error: "Email already send",
+            emails: emailsAlreadyExists
+        });
     }
 
     if (emails.includes(admin.email)) {

@@ -8,5 +8,7 @@ router.use('/departments', require('../controllers/Department'));
 router.use('/products', require('../controllers/Product'));
 router.use('/lists', require('../controllers/List'));
 router.use('/auth', require('../controllers/Auth'));
+router.use('/favorites', require('../controllers/Favorite'));
+router.use('/me', require('../controllers/Me'));
 
 module.exports = router;

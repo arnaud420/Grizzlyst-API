@@ -3,6 +3,8 @@ module.exports = (sequelize, DataTypes) => {
         quantity: {
             type: DataTypes.INTEGER,
         },
+        // 0: non commencé / en cours
+        // 1: terminé / trouvé
         state: {
             type: DataTypes.BOOLEAN
         }

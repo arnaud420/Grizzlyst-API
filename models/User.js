@@ -37,6 +37,12 @@ module.exports = (sequelize, DataTypes) => {
         }
     });
 
+    User.prototype.toJSON = function() {
+        const user = this.get();
+        delete user.password;
+        return user;
+    };
+
     User.associate = (models) => {
         models.user.belongsToMany(models.group, { through: 'user_group' })
     };

@@ -5,19 +5,19 @@ const models = require('../models');
 /**
  * @swagger
  *
- * /api/users:
+ * /api/favorites:
  *   get:
- *     tags: [users]
- *     description: Get all users
+ *     tags: [favorites]
+ *     description: Get all favorites
  *     produces:
  *       - application/json
  *     responses:
  *       200:
- *         description: users
+ *         description: favorites
  */
 router.get('/', async (req, res) => {
     try {
-        res.json(await models.user.findAll());
+        res.json(await models.favorite.findAll());
     }
     catch (e) {
         res.json({message: e.error});
@@ -27,19 +27,19 @@ router.get('/', async (req, res) => {
 /**
  * @swagger
  *
- * /api/users:
+ * /api/favorites/:id:
  *   get:
- *     tags: [users]
- *     description: Get a user by id
+ *     tags: [favorites]
+ *     description: Get favorite by id
  *     produces:
  *       - application/json
  *     responses:
  *       200:
- *         description: user
+ *         description: favorite
  */
 router.get('/:id', async (req, res) => {
     try {
-        res.json(await models.user.findByPk(req.params.id));
+        res.json(await models.favorite.findByPk(req.params.id));
     }
     catch (e) {
         res.json({message: e.error});

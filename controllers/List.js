@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const _ = require('lodash');
 const models = require('../models');
 const { openFoodFactsClient } = require('../helpers/Client');
-const { getProductsFromDepartment } = require('../helpers/list');
+const { getProductsFromDepartment, getDepartments } = require('../helpers/list');
 
 /**
  * @swagger
@@ -65,13 +66,39 @@ router.get('/:id/products', async (req, res) => {
     try {
         const products = await models.list_product.findAll({
             where: { listId: req.params.id },
-            include: ['product']
+            include: [{
+                model: models.product,
+            }]
         });
+
         res.json(products);
     }
     catch (e) {
         res.json({message: e.error});
     }
+});
+
+/**
+ * @swagger
+ *
+ * /api/lists/:id/departments:
+ *   get:
+ *     tags: [lists]
+ *     description: Get departments belongs to a list
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: departments
+ */
+router.get('/:id/departments', async (req, res) => {
+   try {
+       const departments = await getDepartments(req.params.id);
+       res.json(departments);
+   }
+   catch (e) {
+       res.json({message: e.error});
+   }
 });
 
 /**
@@ -89,13 +116,97 @@ router.get('/:id/products', async (req, res) => {
  */
 router.get('/:id/departments/products', async (req, res) => {
     try {
-        const productsDepartments = await getProductsFromDepartment(req.params.id);
-        res.json(productsDepartments);
+        // const productsDepartments = await getProductsFromDepartment(req.params.id);
+
+        const departments = await getDepartments(req.params.id);
+        const products = await models.list_product.findAll({
+            where: { listId: req.params.id },
+            include: ['product']
+        });
+        let productsByDepartments = _.groupBy(products, (data) => data.departmentId);
+
+        for (let i in departments) {
+            let departmentId = departments[i].id;
+
+            departments[i].products = (departmentId in productsByDepartments) ? productsByDepartments[departmentId] : [];
+        }
+
+        res.json(departments);
     }
     catch (e) {
-        res.json({message: e});
+        res.json({message: e.message});
     }
 });
+
+// en test
+/**
+ * @swagger
+ *
+ * /api/lists/:id/departments/products/completed:
+ *   get:
+ *     tags: [lists]
+ *     description: Get products order by departments belongs to a list
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: productsDepartments
+ */
+router.get('/:id/departments/products/completed', async (req, res) => {
+    try {
+        const products = await models.list_product.findAll({
+            where: {
+                listId: req.params.id,
+                state: 1
+            },
+            include: ['product']
+        });
+        res.json(products);
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+/**
+ * @swagger
+ *
+ * /api/lists/:id/departments/products/progress:
+ *   get:
+ *     tags: [lists]
+ *     description: Get products order by departments belongs to a list
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: productsDepartments
+ */
+router.get('/:id/departments/products/progress', async (req, res) => {
+    try {
+        const departments = await getDepartments(req.params.id);
+        const products = await models.list_product.findAll({
+            where: {
+                listId: req.params.id,
+                state: 0
+            },
+            include: ['product']
+        });
+        let productsByDepartments = _.groupBy(products, (data) => data.departmentId);
+
+        for (let i in departments) {
+            let departmentId = departments[i].id;
+
+            departments[i].products = (departmentId in productsByDepartments) ? productsByDepartments[departmentId] : [];
+        }
+
+        res.json(departments);
+    }
+    catch (e) {
+        res.json({message: e.message});
+    }
+});
+
+// fin en test
 
 /**
  * @swagger
@@ -180,9 +291,10 @@ router.post('/:id/department', async (req, res) => {
             return res.json({message: 'Field departmentId required'});
         }
 
-        list.addDepartment(req.body.departmentId);
+        await list.addDepartment(req.body.departmentId);
+        const department = await models.department.findByPk(req.body.departmentId);
 
-        res.json(await list.getDepartments());
+        res.json(department);
     }
     catch (e) {
         res.json({message: e.error});
@@ -204,6 +316,11 @@ router.post('/:id/department', async (req, res) => {
  *         in: formData
  *         required: true
  *         type: int
+ *       - name: quantity
+ *         description: Product quantity
+ *         in: formData
+ *         required: false
+ *         type: int
  *     responses:
  *       200:
  *         description: listProduct
@@ -211,7 +328,7 @@ router.post('/:id/department', async (req, res) => {
 router.post('/:id/department/:departmentId/product', async (req, res) => {
     let product = null;
 
-    const { _id } = req.body;
+    const { _id, quantity } = req.body;
 
     if (!_id) {
         return res.json({message: 'Fields _id required'})
@@ -236,19 +353,33 @@ router.post('/:id/department/:departmentId/product', async (req, res) => {
             productId: product.id,
             listId: req.params.id,
             departmentId: req.params.departmentId,
-            quantity: req.body.quantity
+            quantity,
+            state: 0
         });
 
         return res.json({
             message: 'Product add to list with success',
-            listProduct
+            product
         })
     }
     catch (e) {
-        return res.json(e);
+        return res.status(500).json(e);
     }
 });
 
+/**
+ * @swagger
+ *
+ * /api/lists/:id:
+ *   put:
+ *     tags: [lists]
+ *     description: edit a list.
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: listProduct
+ */
 router.put('/:id', async (req, res) => {
     try {
         await models.list.update(req.body, {
@@ -377,7 +508,7 @@ router.delete('/:id/department/:departmentId/product/:productId', async (req, re
         });
 
         if (product === null) {
-            return res.json({message: 'Product not found'});
+            return res.status(404).json({message: 'Product not found'});
         }
 
         await product.destroy();
